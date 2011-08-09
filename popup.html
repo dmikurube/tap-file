@@ -41,23 +41,15 @@ function errorHandler(e) {
       console.log("error:" + msg);
     }
 
-function fs_init(fs) {
-  console.log("Init");
-
-  fs.root.getFile('tapfile.txt', {create: false, exclusive: false}, function(fileEntry) {
-    fileEntry.file(function(file) {
-      console.log("reading");
-      var reader = new FileReader();
-      reader.onloadend = function(e) {
-        console.log("read");
-        console.log(this.result);
-      };
-      reader.readAsText(file);
-    }, function(e) { console.log("Read1:"); errorHandler(e); } )
-  }, function(e) { console.log("Read2:"); errorHandler(e); } );
-
+function add_write(fs, existing) {
   var bb = new (window.BlobBuilder || window.WebKitBlobBuilder)();
-  bb.append('sample');
+  bb.append('{\n');
+  bb.append('  entries: [\n');
+  // bb.append(existing + 'sample\n');
+  bb.append('      { seconds: [100, 200, 300], inputtext: "hogehoge" },\n');
+  bb.append('      { seconds: [100, 200, 400], inputtext: "foobarhoge" }\n');
+  bb.append('  ]\n');
+  bb.append('}');
   var blob = bb.getBlob();
 
   console.log("blob made");
@@ -68,12 +60,31 @@ function fs_init(fs) {
         errorHandler(e.currentTarget.error);
       };
       console.log("writing");
+      //fileWriter.truncate(0);
       fileWriter.write(blob);
       console.log("written");
     }, errorHandler);
   }, errorHandler);
 
   chrome.extension.sendRequest({"type" : "init"});
+}
+
+function fs_init(fs) {
+  console.log("Init");
+
+  fs.root.getFile('tapfile.txt', {create: false, exclusive: false}, function(fileEntry) {
+    fileEntry.file(function(file) {
+      console.log("reading");
+      var reader = new FileReader();
+      reader.onloadend = function(e) {
+        console.log("read");
+        console.log(this.result);
+        add_write(fs, this.result);
+      };
+      reader.readAsText(file);
+    }, function(e) { console.log("Read1:"); errorHandler(e); add_write(fs, ""); } )
+  }, function(e) { console.log("Read2:"); errorHandler(e); add_write(fs, ""); } );
+
 }
 
 function fs_error(e) {
