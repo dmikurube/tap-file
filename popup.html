@@ -41,6 +41,17 @@ function errorHandler(e) {
       console.log("error:" + msg);
     }
 
+function to_json(milliseconds, inputtext) {
+  var json = "{ seconds: [";
+  for (var index in milliseconds) {
+    if (index > 0) json += ', ';
+    json += milliseconds[index];
+  }
+  json += '], inputtext: "' + inputtext + '" }';
+  console.log(json);
+  return json;
+}
+
 function add_write(fs, existing) {
   fs.root.getFile('tapfile.txt', {create: true, exclusive: false}, function(fileEntry) {
     fileEntry.createWriter(function(fileWriter) {
@@ -59,14 +70,7 @@ function add_write(fs, existing) {
   bb.append('  entries: [\n');
   console.log(evaled);
   for (var ent in evaled) {
-    bb.append('      { seconds: [');
-    for (var ms in evaled[ent]["seconds"]) {
-      if (ms > 0) {
-        bb.append(', ');
-      }
-      bb.append("" + evaled[ent]["seconds"][ms]);
-    }
-    bb.append('], inputtext: "' + evaled[ent]["inputtext"] + '" },\n');
+    bb.append('      ' + to_json(evaled[ent]["seconds"], evaled[ent]["inputtext"]) + ',\n');
   }
   bb.append('      { seconds: [100, 200, 300], inputtext: "added string" },\n');
   bb.append('  ]\n');
