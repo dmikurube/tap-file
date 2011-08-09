@@ -111,13 +111,6 @@ function fs_error(e) {
   console.log("fs_error:" + e);
 }
 
-console.log("doing");
-window.webkitRequestFileSystem(window.TEMPORARY,
-                               1024 * 1024,
-                               fs_init,
-                               fs_error);
-console.log("done");
-
 </script>
 </body>
 </html>
