@@ -42,12 +42,26 @@ function errorHandler(e) {
     }
 
 function add_write(fs, existing) {
+  fs.root.getFile('tapfile.txt', {create: true, exclusive: false}, function(fileEntry) {
+    fileEntry.createWriter(function(fileWriter) {
+      fileWriter.onerror = function(e) {
+        errorHandler(e.currentTarget.error);
+      };
+      console.log("truncating");
+      fileWriter.truncate(0);
+      console.log("truncated");
+    }, errorHandler);
+  }, errorHandler);
+
   var bb = new (window.BlobBuilder || window.WebKitBlobBuilder)();
+  var evaled = eval(existing);
   bb.append('{\n');
   bb.append('  entries: [\n');
-  // bb.append(existing + 'sample\n');
-  bb.append('      { seconds: [100, 200, 300], inputtext: "hogehoge" },\n');
-  bb.append('      { seconds: [100, 200, 400], inputtext: "foobarhoge" }\n');
+  console.log(evaled);
+  for (var ent in evaled) {
+    bb.append('      { seconds: [10, 20, 30], inputtext: "' + evaled[ent]["inputtext"] + '" },\n');
+  }
+  bb.append('      { seconds: [100, 200, 300], inputtext: "added string" },\n');
   bb.append('  ]\n');
   bb.append('}');
   var blob = bb.getBlob();
@@ -60,7 +74,6 @@ function add_write(fs, existing) {
         errorHandler(e.currentTarget.error);
       };
       console.log("writing");
-      //fileWriter.truncate(0);
       fileWriter.write(blob);
       console.log("written");
     }, errorHandler);
