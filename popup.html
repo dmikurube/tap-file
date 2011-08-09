@@ -70,6 +70,16 @@ var bg = chrome.extension.getBackgroundPage();
 // It gets registered data from the saved file.
 bg.get_data(callback_get_data);
 
+if(bg.getInputPattern() != null){
+  document.getElementById("inputtext").value = bg.getInputValue();
+  if(bg.getInputPattern().length > 0) document.getElementById("ms1").value = bg.getInputPattern()[0];
+  if(bg.getInputPattern().length > 1) document.getElementById("ms2").value = bg.getInputPattern()[1];
+  if(bg.getInputPattern().length > 2) document.getElementById("ms3").value = bg.getInputPattern()[2];
+  if(bg.getInputPattern().length > 3) document.getElementById("ms4").value = bg.getInputPattern()[3];
+  if(bg.getInputPattern().length > 4) document.getElementById("ms5").value = bg.getInputPattern()[4];
+  if(bg.getInputPattern().length > 5) document.getElementById("ms6").value = bg.getInputPattern()[5];
+}
+
 // bg.get_data(callback_get_data);
 console.log("done");
 </script>

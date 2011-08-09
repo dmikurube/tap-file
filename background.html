@@ -1,45 +1,132 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
 <head>
+<title>Taps</title>
 <style>
 * {
-  margin: 0px;
-  padding: 0px;
+  margin:0px;
+  padding:0px;
 }
 </style>
 </head>
 <body>
-<h1>Tap text: background</h1>
-<div id="status" style="border:1px;"></div>
-<div id="milliseconds">
-</div>
-<input type="text" id="inputtext" name="inputtext" size="80"></input>
-<div id="current"></div>
 <script>
-function errorHandler(e) {
-  var msg = '';
-  switch (e.code) {
-    case FileError.QUOTA_EXCEEDED_ERR:
-      msg = 'QUOTA_EXCEEDED_ERR';
-      break;
-    case FileError.NOT_FOUND_ERR:
-      msg = 'NOT_FOUND_ERR';
-      break;
-    case FileError.SECURITY_ERR:
-      msg = 'SECURITY_ERR';
-      break;
-    case FileError.INVALID_MODIFICATION_ERR:
-      msg = 'INVALID_MODIFICATION_ERR';
-      break;
-    case FileError.INVALID_STATE_ERR:
-      msg = 'INVALID_STATE_ERR';
-      break;
-    default:
-      msg = 'Unknown Error';
-      break;
+  create_or_clear_data();
+
+  // Listen for the content script to send a message to the background page.
+  chrome.extension.onRequest.addListener(onRequest);
+
+
+  var input_pattern = null;
+  var input_value = null;
+  
+  function getInputPattern(){
+    return input_pattern;
+  }
+  function getInputValue(){
+    return input_value;
+  }
+  function setInputPattern(p){
+    input_pattern = p;
+  }
+  function setInputValue(v){
+    input_value = v;
+  }
+
+  // Called when a tap pattern is passed from a user.
+  function onRequest(request, sender, sendResponse) {
+    input_pattern = request.pattern;
+    input_value = request.value;
+
+    // Match the tap pattern to existing patterns
+    get_data(patternMatching);
+ 
+    // Return nothing to let the connection be cleaned up.
+    sendResponse({});
   };
-  console.log("error:" + msg);
-}
+  
+  // Calculate the distance between two tap patterns.
+  function getTapPatternsDistance(pattern1, pattern2, length){
+    var distance = 0;
+    var i;
+    for(i=0; i<length; i++){
+      distance += Math.abs(pattern1[i] - pattern2[i]);
+    }
+    return 1.0 * distance / length;
+  }
+
+  function patternMatching(data){
+    var threshold = 100;
+    var min_distance = 10000;
+    var pattern_id;
+
+    if(data != null){
+      for(i=0; i<data.length; i++){
+        if(data[i].seconds.length == input_pattern.length){
+          var distance = getTapPatternsDistance(input_pattern,data[i].seconds,input_pattern.length);
+          if(distance < min_distance){
+            min_distance = distance;
+            pattern_id = i;
+          }
+        }
+      }
+    }
+
+    console.log("min distance: " + min_distance);
+    
+    if(min_distance < threshold){
+      // Found the same pattern in the dictionary
+      console.log("Found pattern id: " + pattern_id);
+      input_pattern = null;  // Need to clear this
+      input_value = null;  // Need to clear this
+    }else{
+      // It is a unidentified pattern. When user add it to the dictionary,
+      // input_pattern and input_value will be used.
+      console.log("unidentified pattern");
+      // Will not add to the dictionary here
+      pattern_id = null;
+    }
+
+    var value = null;
+    if(pattern_id != null) value = data[pattern_id].inputtext;
+
+    // Send the pattern value to content script, which will insert the value to focused textfield.
+    // Need to call even if the pattern is unidentified, because this call sets focus.
+    chrome.tabs.getSelected(null, function(tab) {
+        chrome.tabs.sendRequest(tab.id, {pattern_value: value}, function(response) {
+            //console.log(response.farewell);
+        });
+    });
+
+  }
+
+
+
+// File API -----------------------------------------------------------------
+function errorHandler(e) {
+      var msg = '';
+      switch (e.code) {
+        case FileError.QUOTA_EXCEEDED_ERR:
+          msg = 'QUOTA_EXCEEDED_ERR';
+          break;
+        case FileError.NOT_FOUND_ERR:
+          msg = 'NOT_FOUND_ERR';
+          break;
+        case FileError.SECURITY_ERR:
+          msg = 'SECURITY_ERR';
+          break;
+        case FileError.INVALID_MODIFICATION_ERR:
+          msg = 'INVALID_MODIFICATION_ERR';
+          break;
+        case FileError.INVALID_STATE_ERR:
+          msg = 'INVALID_STATE_ERR';
+          break;
+        default:
+          msg = 'Unknown Error';
+          break;
+      };
+      console.log("error:" + msg);
+    }
 
 function to_json(milliseconds, inputtext) {
   var json = "{ seconds: [";
@@ -131,7 +218,7 @@ function get_data_fs_init(fs, callback) {
         callback(eval(this.result));
       };
       reader.readAsText(file);
-    }, function(e) { console.log("Read1:"); errorHandler(e); callback([]); } )
+    }, function(e) { console.log("Read1:"); errorHandler(e); callback([]);} )
   }, function(e) { console.log("Read2:"); errorHandler(e); callback([]); } );
 }
 
@@ -159,6 +246,7 @@ function add_data(milliseconds, inputtext) {
                                  function(fs) { add_data_fs_init(fs, milliseconds, inputtext); },
                                  fs_error);
 }
+
 </script>
 </body>
 </html>
