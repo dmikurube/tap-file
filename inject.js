@@ -16,7 +16,7 @@ window.addEventListener("mousedown", function(event) {
 
 	    // Set timer to check if tap pattern is finished. 
 	    if(timer != null) window.clearTimeout(timer);  // Remove existing timer
-	    timer = window.setTimeout("processPattern()",1000);  // Set 1sec timeout
+	    timer = window.setTimeout("processPattern()",2000);  // Set 2sec timeout
 	}else{
 	    console.log("diff object");
 	    record_taps = false;
