@@ -131,8 +131,8 @@ function get_data_fs_init(fs, callback) {
         callback(eval(this.result));
       };
       reader.readAsText(file);
-    }, function(e) { console.log("Read1:"); errorHandler(e); add_write(fs, "", [931, 49], "Add 2"); } )
-  }, function(e) { console.log("Read2:"); errorHandler(e); add_write(fs, "", [294], "Add 3"); } );
+    }, function(e) { console.log("Read1:"); errorHandler(e); callback([]) )
+  }, function(e) { console.log("Read2:"); errorHandler(e); callback([]); } );
 }
 
 function fs_error(e) {
