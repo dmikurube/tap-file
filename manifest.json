@@ -1,0 +1,12 @@
+{
+  "name": "Tap File",
+  "description": "Save tapping information",
+  "version": "0.1",
+  "browser_action": {
+    "default_icon": "icon.png",
+    "popup": "popup.html"
+  },
+  "icons": {
+    "48": "icon.png"
+  }
+}
