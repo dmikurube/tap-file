@@ -1,44 +1,76 @@
 <!doctype html>
 <html>
 <head>
-<style>
-* {
-  margin:0px;
-  padding:0px;
+<script>
+function callback_get_data(data) {
+  var list = document.getElementById("current");
+  var ul = document.createElement("ul");
+  for (var entry in data) {
+    var li = document.createElement("li");
+    for (var ms_index in data[entry]["seconds"])
+      li.innerHTML += data[entry]["seconds"][ms_index] + ",";
+    li.innerHTML += data[entry]["inputtext"];
+    ul.appendChild(li);
+  }
+  list.appendChild(ul);
+  console.log(data);
 }
-</style>
+
+function add_written_data() {
+  var inputtext = document.register_form.inputtext.value;
+
+  var milliseconds = [];
+  var ms1 = document.register_form.ms1.value;
+  if (ms1 != "") milliseconds.push(ms1 - 0);
+  var ms2 = document.register_form.ms2.value;
+  if (ms2 != "") milliseconds.push(ms2 - 0);
+  var ms3 = document.register_form.ms3.value;
+  if (ms3 != "") milliseconds.push(ms3 - 0);
+  var ms4 = document.register_form.ms4.value;
+  if (ms4 != "") milliseconds.push(ms4 - 0);
+  var ms5 = document.register_form.ms5.value;
+  if (ms5 != "") milliseconds.push(ms5 - 0);
+  var ms6 = document.register_form.ms6.value;
+  if (ms6 != "") milliseconds.push(ms6 - 0);
+
+  if (milliseconds.length != 0 && inputtext != "") {
+    // It adds a data.
+    bg.add_data(milliseconds, inputtext);
+  }
+}
+
+function clear_data() {
+  // It creates a clear tapping data file.
+  bg.create_or_clear_data();
+}
+</script>
 </head>
 <body>
 <h1>Tap text</h1>
-<div id="status" style="border:1px;"></div>
+<div style="border: 1px solid; margin: 1em; padding: 1em">
+<form name="register_form">
 <div id="milliseconds">
+<input type="text" id="ms1" name="ms1" size="4"></input>
+<input type="text" id="ms2" name="ms2" size="4"></input>
+<input type="text" id="ms3" name="ms3" size="4"></input>
+<input type="text" id="ms4" name="ms4" size="4"></input>
+<input type="text" id="ms5" name="ms5" size="4"></input>
+<input type="text" id="ms6" name="ms6" size="4"></input>
 </div>
 <input type="text" id="inputtext" name="inputtext" size="80"></input>
+<input type="button" value="Register" onclick="add_written_data()"></input>
+<input type="button" value="Clear" onclick="clear_data()"></input>
+</form>
+</div>
 <div id="current"></div>
 <script>
 console.log("doing");
 var bg = chrome.extension.getBackgroundPage();
 
-// It creates a clear tapping data file.
-// bg.create_or_clear_data();
-
 // It gets registered data from the saved file.
-function callback_get_data(data) {
-  console.log(data);
-}
 bg.get_data(callback_get_data);
 
-// It adds a data.
-bg.add_data([102, 2024, 104], "A text to be added");
-
-bg.get_data(callback_get_data);
-
-/*
-window.webkitRequestFileSystem(window.TEMPORARY,
-                               1024 * 1024,
-                               bg.fs_init,
-                               bg.fs_error);
-*/
+// bg.get_data(callback_get_data);
 console.log("done");
 </script>
 </body>

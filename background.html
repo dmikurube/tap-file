@@ -3,13 +3,13 @@
 <head>
 <style>
 * {
-  margin:0px;
-  padding:0px;
+  margin: 0px;
+  padding: 0px;
 }
 </style>
 </head>
 <body>
-<h1>Tap text</h1>
+<h1>Tap text: background</h1>
 <div id="status" style="border:1px;"></div>
 <div id="milliseconds">
 </div>
@@ -17,29 +17,29 @@
 <div id="current"></div>
 <script>
 function errorHandler(e) {
-      var msg = '';
-      switch (e.code) {
-        case FileError.QUOTA_EXCEEDED_ERR:
-          msg = 'QUOTA_EXCEEDED_ERR';
-          break;
-        case FileError.NOT_FOUND_ERR:
-          msg = 'NOT_FOUND_ERR';
-          break;
-        case FileError.SECURITY_ERR:
-          msg = 'SECURITY_ERR';
-          break;
-        case FileError.INVALID_MODIFICATION_ERR:
-          msg = 'INVALID_MODIFICATION_ERR';
-          break;
-        case FileError.INVALID_STATE_ERR:
-          msg = 'INVALID_STATE_ERR';
-          break;
-        default:
-          msg = 'Unknown Error';
-          break;
-      };
-      console.log("error:" + msg);
-    }
+  var msg = '';
+  switch (e.code) {
+    case FileError.QUOTA_EXCEEDED_ERR:
+      msg = 'QUOTA_EXCEEDED_ERR';
+      break;
+    case FileError.NOT_FOUND_ERR:
+      msg = 'NOT_FOUND_ERR';
+      break;
+    case FileError.SECURITY_ERR:
+      msg = 'SECURITY_ERR';
+      break;
+    case FileError.INVALID_MODIFICATION_ERR:
+      msg = 'INVALID_MODIFICATION_ERR';
+      break;
+    case FileError.INVALID_STATE_ERR:
+      msg = 'INVALID_STATE_ERR';
+      break;
+    default:
+      msg = 'Unknown Error';
+      break;
+  };
+  console.log("error:" + msg);
+}
 
 function to_json(milliseconds, inputtext) {
   var json = "{ seconds: [";
@@ -131,7 +131,7 @@ function get_data_fs_init(fs, callback) {
         callback(eval(this.result));
       };
       reader.readAsText(file);
-    }, function(e) { console.log("Read1:"); errorHandler(e); callback([]) )
+    }, function(e) { console.log("Read1:"); errorHandler(e); callback([]); } )
   }, function(e) { console.log("Read2:"); errorHandler(e); callback([]); } );
 }
 
@@ -159,7 +159,6 @@ function add_data(milliseconds, inputtext) {
                                  function(fs) { add_data_fs_init(fs, milliseconds, inputtext); },
                                  fs_error);
 }
-
 </script>
 </body>
 </html>
