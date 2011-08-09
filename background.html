@@ -90,7 +90,18 @@ function add_write(fs, existing, milliseconds, inputtext) {
   chrome.extension.sendRequest({"type" : "init"});
 }
 
-function fs_init(fs) {
+function create_or_clear_fs_init(fs) {
+  fs.root.getFile('tapfile.txt', {create: true, exclusive: false}, function(fileEntry) {
+    fileEntry.createWriter(function(fileWriter) {
+      fileWriter.onerror = function(e) {
+        errorHandler(e.currentTarget.error);
+      };
+      fileWriter.truncate(0);
+    }, errorHandler);
+  }, errorHandler);
+}
+
+function add_data_fs_init(fs, milliseconds, inputtext) {
   console.log("Init");
 
   fs.root.getFile('tapfile.txt', {create: false, exclusive: false}, function(fileEntry) {
@@ -100,7 +111,24 @@ function fs_init(fs) {
       reader.onloadend = function(e) {
         console.log("read");
         console.log(this.result);
-        add_write(fs, this.result, [90, 29, 104], "Added string 1");
+        add_write(fs, this.result, milliseconds, inputtext);
+      };
+      reader.readAsText(file);
+    }, function(e) { console.log("Read1:"); errorHandler(e); add_write(fs, "", [931, 49], "Add 2"); } )
+  }, function(e) { console.log("Read2:"); errorHandler(e); add_write(fs, "", [294], "Add 3"); } );
+}
+
+function get_data_fs_init(fs, callback) {
+  console.log("Init");
+
+  fs.root.getFile('tapfile.txt', {create: false, exclusive: false}, function(fileEntry) {
+    fileEntry.file(function(file) {
+      console.log("reading");
+      var reader = new FileReader();
+      reader.onloadend = function(e) {
+        console.log("read");
+        console.log(this.result);
+        callback(eval(this.result));
       };
       reader.readAsText(file);
     }, function(e) { console.log("Read1:"); errorHandler(e); add_write(fs, "", [931, 49], "Add 2"); } )
@@ -109,6 +137,27 @@ function fs_init(fs) {
 
 function fs_error(e) {
   console.log("fs_error:" + e);
+}
+
+function get_data(callback) {
+  window.webkitRequestFileSystem(window.TEMPORARY,
+                                 1024 * 1024,
+                                 function(fs) { get_data_fs_init(fs, callback); },
+                                 fs_error);
+}
+
+function create_or_clear_data() {
+  window.webkitRequestFileSystem(window.TEMPORARY,
+                                 1024 * 1024,
+                                 create_or_clear_fs_init,
+                                 fs_error);
+}
+
+function add_data(milliseconds, inputtext) {
+  window.webkitRequestFileSystem(window.TEMPORARY,
+                                 1024 * 1024,
+                                 function(fs) { add_data_fs_init(fs, milliseconds, inputtext); },
+                                 fs_error);
 }
 
 </script>
