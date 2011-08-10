@@ -2,9 +2,13 @@
 <html>
 <head>
 <script>
+var bg = chrome.extension.getBackgroundPage();
+
 function callback_get_data(data) {
   var list = document.getElementById("current");
+  var old_list = document.getElementById("pattern_list");
   var ul = document.createElement("ul");
+  ul.setAttribute("id", "pattern_list");
   for (var entry in data) {
     var li = document.createElement("li");
     for (var ms_index in data[entry]["seconds"])
@@ -12,7 +16,10 @@ function callback_get_data(data) {
     li.innerHTML += data[entry]["inputtext"];
     ul.appendChild(li);
   }
-  list.appendChild(ul);
+  if (old_list == null)
+    list.appendChild(ul);
+  else
+    list.replaceChild(old_list, ul);
   console.log(data);
 }
 
@@ -65,12 +72,11 @@ function clear_data() {
 <div id="current"></div>
 <script>
 console.log("doing");
-var bg = chrome.extension.getBackgroundPage();
 
 // It gets registered data from the saved file.
 bg.get_data(callback_get_data);
 
-if(bg.getInputPattern() != null){
+if (bg.getInputPattern() != null) {
   document.getElementById("inputtext").value = bg.getInputValue();
   if(bg.getInputPattern().length > 0) document.getElementById("ms1").value = bg.getInputPattern()[0];
   if(bg.getInputPattern().length > 1) document.getElementById("ms2").value = bg.getInputPattern()[1];
@@ -80,7 +86,6 @@ if(bg.getInputPattern() != null){
   if(bg.getInputPattern().length > 5) document.getElementById("ms6").value = bg.getInputPattern()[5];
 }
 
-// bg.get_data(callback_get_data);
 console.log("done");
 </script>
 </body>
