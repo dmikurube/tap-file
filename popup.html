@@ -7,6 +7,8 @@ var bg = chrome.extension.getBackgroundPage();
 function callback_get_data(data) {
   var list = document.getElementById("current");
   var old_list = document.getElementById("pattern_list");
+  if (old_list != null)
+    list.removeChild(old_list);
   var ul = document.createElement("ul");
   ul.setAttribute("id", "pattern_list");
   for (var entry in data) {
@@ -16,10 +18,7 @@ function callback_get_data(data) {
     li.innerHTML += data[entry]["inputtext"];
     ul.appendChild(li);
   }
-  if (old_list == null)
-    list.appendChild(ul);
-  else
-    list.replaceChild(old_list, ul);
+  list.appendChild(ul);
   console.log(data);
 }
 
@@ -42,13 +41,24 @@ function add_written_data() {
 
   if (milliseconds.length != 0 && inputtext != "") {
     // It adds a data.
-    bg.add_data(milliseconds, inputtext);
+    bg.add_data(milliseconds, inputtext, function () {
+      document.register_form.inputtext.value = "";
+      document.register_form.ms1.value = "";
+      document.register_form.ms2.value = "";
+      document.register_form.ms3.value = "";
+      document.register_form.ms4.value = "";
+      document.register_form.ms5.value = "";
+      document.register_form.ms6.value = "";
+      bg.get_data(callback_get_data);
+    } );
   }
 }
 
 function clear_data() {
   // It creates a clear tapping data file.
-  bg.create_or_clear_data();
+  bg.create_or_clear_data(function () {
+    bg.get_data(callback_get_data);
+  });
 }
 </script>
 </head>
@@ -66,7 +76,7 @@ function clear_data() {
 </div>
 <input type="text" id="inputtext" name="inputtext" size="80"></input>
 <input type="button" value="Register" onclick="add_written_data()"></input>
-<input type="button" value="Clear" onclick="clear_data()"></input>
+<input type="button" value="Clear All" onclick="clear_data()"></input>
 </form>
 </div>
 <div id="current"></div>

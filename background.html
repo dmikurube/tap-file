@@ -139,7 +139,7 @@ function to_json(milliseconds, inputtext) {
   return json;
 }
 
-function add_write(fs, existing, milliseconds, inputtext) {
+function add_write(fs, existing, milliseconds, inputtext, callback) {
   fs.root.getFile('tapfile.txt', {create: true, exclusive: false}, function(fileEntry) {
     fileEntry.createWriter(function(fileWriter) {
       fileWriter.onerror = function(e) {
@@ -171,24 +171,28 @@ function add_write(fs, existing, milliseconds, inputtext) {
       console.log("writing");
       fileWriter.write(blob);
       console.log("written");
+      if (callback != undefined && callback != null)
+        setTimeout(callback, 10);
     }, errorHandler);
   }, errorHandler);
 
   chrome.extension.sendRequest({"type" : "init"});
 }
 
-function create_or_clear_fs_init(fs) {
+function create_or_clear_fs_init(fs, callback) {
   fs.root.getFile('tapfile.txt', {create: true, exclusive: false}, function(fileEntry) {
     fileEntry.createWriter(function(fileWriter) {
       fileWriter.onerror = function(e) {
         errorHandler(e.currentTarget.error);
       };
       fileWriter.truncate(0);
+      if (callback != undefined && callback != null)
+        setTimeout(callback, 10);
     }, errorHandler);
   }, errorHandler);
 }
 
-function add_data_fs_init(fs, milliseconds, inputtext) {
+function add_data_fs_init(fs, milliseconds, inputtext, callback) {
   console.log("Init");
 
   fs.root.getFile('tapfile.txt', {create: false, exclusive: false}, function(fileEntry) {
@@ -198,11 +202,11 @@ function add_data_fs_init(fs, milliseconds, inputtext) {
       reader.onloadend = function(e) {
         console.log("read");
         console.log(this.result);
-        add_write(fs, this.result, milliseconds, inputtext);
+        add_write(fs, this.result, milliseconds, inputtext, callback);
       };
       reader.readAsText(file);
-    }, function(e) { console.log("Read1:"); errorHandler(e); add_write(fs, "", [931, 49], "Add 2"); } )
-  }, function(e) { console.log("Read2:"); errorHandler(e); add_write(fs, "", [294], "Add 3"); } );
+    }, function(e) { console.log("Read1:"); errorHandler(e); add_write(fs, "", [931, 49], "Add 2", callback); } )
+  }, function(e) { console.log("Read2:"); errorHandler(e); add_write(fs, "", [294], "Add 3", callback); } );
 }
 
 function get_data_fs_init(fs, callback) {
@@ -227,23 +231,25 @@ function fs_error(e) {
 }
 
 function get_data(callback) {
+  console.log("getting data");
   window.webkitRequestFileSystem(window.TEMPORARY,
                                  1024 * 1024,
                                  function(fs) { get_data_fs_init(fs, callback); },
                                  fs_error);
+  console.log("got data");
 }
 
-function create_or_clear_data() {
+function create_or_clear_data(callback) {
   window.webkitRequestFileSystem(window.TEMPORARY,
                                  1024 * 1024,
-                                 create_or_clear_fs_init,
+                                 function(fs) { create_or_clear_fs_init(fs, callback); },
                                  fs_error);
 }
 
-function add_data(milliseconds, inputtext) {
+function add_data(milliseconds, inputtext, callback) {
   window.webkitRequestFileSystem(window.TEMPORARY,
                                  1024 * 1024,
-                                 function(fs) { add_data_fs_init(fs, milliseconds, inputtext); },
+                                 function(fs) { add_data_fs_init(fs, milliseconds, inputtext, callback); },
                                  fs_error);
 }
 
