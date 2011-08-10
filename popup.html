@@ -83,6 +83,8 @@ function clear_data() {
 <script>
 console.log("doing");
 
+chrome.browserAction.setIcon({path:"icon.png"});
+
 // It gets registered data from the saved file.
 bg.get_data(callback_get_data);
 
