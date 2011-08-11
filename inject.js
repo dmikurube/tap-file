@@ -17,12 +17,14 @@ window.addEventListener("mousedown", function(event) {
 	    // Set timer to check if tap pattern is finished. 
 	    if(timer != null) window.clearTimeout(timer);  // Remove existing timer
 	    timer = window.setTimeout("processPattern()",2000);  // Set 2sec timeout
+
+	    last_tapped_element.style.backgroundColor = "red";
 	}else{
 	    console.log("diff object");
-	    record_taps = false;
-	    last_tapped_element = event.target;
-	    current_taps_count = 0;
+	    resetTapRecord();
 	}
+	
+	last_tapped_element = event.target;
 
 	// Recording the tap time
 	var now = new Date();
@@ -32,15 +34,12 @@ window.addEventListener("mousedown", function(event) {
 
 // Restart tap record when key pressed
 window.addEventListener("keyup", function(event) {
-	if(timer != null) window.clearTimeout(timer);  // Remove timer
-	current_taps_count = 0;
-	record_taps = false;
+	resetTapRecord();
     }, false);
 
 
 // This function called when tap input is finished.
 function processPattern(){
-    if(timer != null) window.clearTimeout(timer);  // Remove timer
     console.log("pattern ended");
     
     if(record_taps){
@@ -51,18 +50,24 @@ function processPattern(){
 	}
 	console.log("tap length: " + tap_intervals.length);
 
-	//Send the current tap pattern to background page 
-	chrome.extension.sendRequest({pattern: tap_intervals,value: last_tapped_element.value}, function(response) {
-		//Do stuff on successful response
-	    });
+	if(tap_intervals.length > 0){
+	    //Send the current tap pattern to background page 
+	    chrome.extension.sendRequest({pattern: tap_intervals,value: last_tapped_element.value}, function(response) {
+		    //Do stuff on successful response
+		});
+	}
 	
     }
-
-    // Reset tap recording
-    current_taps_count = 0;
-    record_taps = false;       
+    resetTapRecord();
 }
 
+// Reset tap recording
+function resetTapRecord(){
+    if(timer != null) window.clearTimeout(timer);  // Remove timer
+    current_taps_count = 0;
+    record_taps = false;       
+    if(last_tapped_element != null) last_tapped_element.style.backgroundColor = null;
+}
 
 // For inserting a phrase corresponding to the tap pattern
 chrome.extension.onRequest.addListener(onRequest);
@@ -71,7 +76,7 @@ function onRequest(request, sender, sendResponse) {
 
     if(last_tapped_element != null){
         if(request.pattern_value != null){
-	    last_tapped_element.value += request.pattern_value;
+	    last_tapped_element.value = request.pattern_value;
 	}
 	last_tapped_element.focus();
     }
